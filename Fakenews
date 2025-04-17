@@ -1,0 +1,106 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
+
+np.random.seed(42)
+data_isot = np.random.rand(500, 10)
+labels_isot = np.random.randint(0, 2, 500)
+
+data_ds2 = np.random.rand(500, 10)
+labels_ds2 = np.random.randint(0, 2, 500)
+
+X_train_isot, X_test_isot, y_train_isot, y_test_isot = train_test_split(data_isot, labels_isot, test_size=0.3, random_state=42)
+X_train_ds2, X_test_ds2, y_train_ds2, y_test_ds2 = train_test_split(data_ds2, labels_ds2, test_size=0.3, random_state=42)
+
+scaler = StandardScaler()
+X_train_isot = scaler.fit_transform(X_train_isot)
+X_test_isot = scaler.transform(X_test_isot)
+
+X_train_ds2 = scaler.fit_transform(X_train_ds2)
+X_test_ds2 = scaler.transform(X_test_ds2)
+
+knn = KNeighborsClassifier()
+rf = RandomForestClassifier()
+dt = DecisionTreeClassifier()
+nb = GaussianNB()
+
+models = {'KNN': knn, 'Random Forest': rf, 'Decision Tree': dt, 'Naive Bayes': nb}
+
+metrics_isot = {'Model': [], 'Accuracy': [], 'Precision': [], 'Sensitivity': [], 'Specificity': []}
+metrics_ds2 = {'Model': [], 'Accuracy': [], 'Precision': [], 'Sensitivity': [], 'Specificity': []}
+
+for model_name, model in models.items():
+    model.fit(X_train_isot, y_train_isot)
+    y_pred_isot = model.predict(X_test_isot)
+    
+    accuracy = accuracy_score(y_test_isot, y_pred_isot)
+    precision = precision_score(y_test_isot, y_pred_isot)
+    sensitivity = recall_score(y_test_isot, y_pred_isot)
+    tn, fp, fn, tp = confusion_matrix(y_test_isot, y_pred_isot).ravel()
+    specificity = tn / (tn + fp)
+    
+    metrics_isot['Model'].append(model_name)
+    metrics_isot['Accuracy'].append(accuracy)
+    metrics_isot['Precision'].append(precision)
+    metrics_isot['Sensitivity'].append(sensitivity)
+    metrics_isot['Specificity'].append(specificity)
+
+df_isot = pd.DataFrame(metrics_isot)
+
+for model_name, model in models.items():
+    model.fit(X_train_ds2, y_train_ds2)
+    y_pred_ds2 = model.predict(X_test_ds2)
+    
+    accuracy = accuracy_score(y_test_ds2, y_pred_ds2)
+    precision = precision_score(y_test_ds2, y_pred_ds2)
+    sensitivity = recall_score(y_test_ds2, y_pred_ds2)
+    tn, fp, fn, tp = confusion_matrix(y_test_ds2, y_pred_ds2).ravel()
+    specificity = tn / (tn + fp)
+    
+    metrics_ds2['Model'].append(model_name)
+    metrics_ds2['Accuracy'].append(accuracy)
+    metrics_ds2['Precision'].append(precision)
+    metrics_ds2['Sensitivity'].append(sensitivity)
+    metrics_ds2['Specificity'].append(specificity)
+
+df_ds2 = pd.DataFrame(metrics_ds2)
+
+print("ISOT Fake News Dataset Performance")
+print(df_isot)
+print("\nDS2 Dataset Performance")
+print(df_ds2)
+
+plt.figure(figsize=(10, 5))
+
+plt.subplot(1, 2, 1)
+sns.barplot(x='Model', y='Accuracy', data=df_isot)
+plt.title('Accuracy Comparison (ISOT Fake News)')
+
+plt.subplot(1, 2, 2)
+sns.barplot(x='Model', y='Accuracy', data=df_ds2)
+plt.title('Accuracy Comparison (DS2 Dataset)')
+
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(10, 5))
+
+plt.subplot(1, 2, 1)
+sns.barplot(x='Model', y='Precision', data=df_isot)
+plt.title('Precision Comparison (ISOT Fake News)')
+
+plt.subplot(1, 2, 2)
+sns.barplot(x='Model', y='Precision', data=df_ds2)
+plt.title('Precision Comparison (DS2 Dataset)')
+
+plt.tight_layout()
+plt.show()
+ 
